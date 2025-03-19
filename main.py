@@ -10,7 +10,6 @@ import seaborn as sns
 from tensorflow import keras
 from tensorflow.keras import layers
 
-# Enable memory growth for GPU if available
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
     try:
@@ -19,7 +18,6 @@ if gpus:
     except RuntimeError as e:
         print(e)
 
-# IMDB dataset preparation
 (x_train, y_train), (x_test, y_test) = tf.keras.datasets.imdb.load_data(num_words=10000)
 
 word_index = tf.keras.datasets.imdb.get_word_index()
@@ -32,12 +30,10 @@ index_to_word[3] = "[UNUSED]"
 x_train_text = [" ".join(index_to_word.get(i, "?") for i in review) for review in x_train]
 x_test_text = [" ".join(index_to_word.get(i, "?") for i in review) for review in x_test]
 
-# DistilBert tokenization
 tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
 train_encodings = tokenizer(x_train_text, padding=True, truncation=True, max_length=128, return_tensors="tf")
 test_encodings = tokenizer(x_test_text, padding=True, truncation=True, max_length=128, return_tensors="tf")
 
-# Create datasets
 train_dataset = tf.data.Dataset.from_tensor_slices((dict(train_encodings), y_train)).shuffle(1000).batch(8)
 test_dataset = tf.data.Dataset.from_tensor_slices((dict(test_encodings), y_test)).batch(8)
 
@@ -47,7 +43,6 @@ with tf.device("/CPU:0"):
 optimizer = Adam(learning_rate=5e-5)
 loss_fn = SparseCategoricalCrossentropy(from_logits=True)
 
-# Training loop
 epochs = 1
 
 for epoch in range(epochs):
@@ -71,11 +66,6 @@ for epoch in range(epochs):
     accuracy = total_correct / total_samples
     print(f"Validation Accuracy: {accuracy:.4f}")
 
-# Save model
-# model.save_pretrained("distilbert-imdb")
-# tokenizer.save_pretrained("distilbert-imdb")
-
-# Load and evaluate
 model = TFDistilBertForSequenceClassification.from_pretrained("distilbert-imdb")
 tokenizer = DistilBertTokenizer.from_pretrained("distilbert-imdb")
 
@@ -105,7 +95,6 @@ plt.ylabel("True Label")
 plt.title("Confusion Matrix")
 plt.show()
 
-# CIFAR-10 Vision Transformer implementation
 num_classes = 10
 input_shape = (32, 32, 3)
 
